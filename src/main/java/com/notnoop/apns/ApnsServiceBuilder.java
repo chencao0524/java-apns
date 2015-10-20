@@ -53,14 +53,14 @@ import static com.notnoop.apns.internal.Utilities.*;
 
 /**
  * The class is used to create instances of {@link ApnsService}.
- * <p/>
+ *
  * Note that this class is not synchronized.  If multiple threads access a
  * {@code ApnsServiceBuilder} instance concurrently, and at least on of the
  * threads modifies one of the attributes structurally, it must be
  * synchronized externally.
- * <p/>
+ *
  * Starting a new {@code ApnsService} is easy:
- * <p/>
+ *
  * <pre>
  *   ApnsService = APNS.newService()
  *    .withCert("/path/to/certificate.p12", "MyCertPassword")
@@ -116,11 +116,11 @@ public class ApnsServiceBuilder {
      * servers.  This relies on the path (absolute or relative to
      * working path) to the keystore (*.p12) containing the
      * certificate, along with the given password.
-     * <p/>
+     *
      * The keystore needs to be of PKCS12 and the keystore
      * needs to be encrypted using the SunX509 algorithm.  Both
      * of these settings are the default.
-     * <p/>
+     *
      * This library does not support password-less p12 certificates, due to a
      * Oracle Java library <a href="http://bugs.sun.com/bugdatabase/view_bug.do?bug_id=6415637">
      * Bug 6415637</a>.  There are three workarounds: use a password-protected
@@ -153,11 +153,11 @@ public class ApnsServiceBuilder {
      * Specify the certificate used to connect to Apple APNS
      * servers.  This relies on the stream of keystore (*.p12)
      * containing the certificate, along with the given password.
-     * <p/>
+     *
      * The keystore needs to be of PKCS12 and the keystore
      * needs to be encrypted using the SunX509 algorithm.  Both
      * of these settings are the default.
-     * <p/>
+     *
      * This library does not support password-less p12 certificates, due to a
      * Oracle Java library <a href="http://bugs.sun.com/bugdatabase/view_bug.do?bug_id=6415637">
      * Bug 6415637</a>.  There are three workarounds: use a password-protected
@@ -183,7 +183,7 @@ public class ApnsServiceBuilder {
      * Specify the certificate used to connect to Apple APNS
      * servers.  This relies on a keystore (*.p12)
      * containing the certificate, along with the given password.
-     * <p/>
+     *
      * This library does not support password-less p12 certificates, due to a
      * Oracle Java library <a href="http://bugs.sun.com/bugdatabase/view_bug.do?bug_id=6415637">
      * Bug 6415637</a>.  There are three workarounds: use a password-protected
@@ -214,7 +214,7 @@ public class ApnsServiceBuilder {
     /**
      * Specify the SSLContext that should be used to initiate the
      * connection to Apple Server.
-     * <p/>
+     *
      * Most clients would use {@link #withCert(InputStream, String)}
      * or {@link #withCert(String, String)} instead.  But some
      * clients may need to represent the Keystore in a different
@@ -255,7 +255,7 @@ public class ApnsServiceBuilder {
     /**
      * Specify the gateway server for sending Apple iPhone
      * notifications.
-     * <p/>
+     *
      * Most clients should use {@link #withSandboxDestination()}
      * or {@link #withProductionDestination()}.  Clients may use
      * this method to connect to mocking tests and such.
@@ -273,7 +273,7 @@ public class ApnsServiceBuilder {
     /**
      * Specify the Feedback for getting failed devices from
      * Apple iPhone Push servers.
-     * <p/>
+     *
      * Most clients should use {@link #withSandboxDestination()}
      * or {@link #withProductionDestination()}.  Clients may use
      * this method to connect to mocking tests and such.
@@ -290,7 +290,7 @@ public class ApnsServiceBuilder {
 
     /**
      * Specify to use Apple servers as iPhone gateway and feedback servers.
-     * <p/>
+     *
      * If the passed {@code isProduction} is true, then it connects to the
      * production servers, otherwise, it connects to the sandbox servers
      *
@@ -309,7 +309,7 @@ public class ApnsServiceBuilder {
     /**
      * Specify to use the Apple sandbox servers as iPhone gateway
      * and feedback servers.
-     * <p/>
+     *
      * This is desired when in testing and pushing notifications
      * with a development provision.
      *
@@ -323,7 +323,7 @@ public class ApnsServiceBuilder {
     /**
      * Specify to use the Apple Production servers as iPhone gateway
      * and feedback servers.
-     * <p/>
+     *
      * This is desired when sending notifications to devices with
      * a production provision (whether through App Store or Ad hoc
      * distribution).
@@ -337,7 +337,7 @@ public class ApnsServiceBuilder {
 
     /**
      * Specify the reconnection policy for the socket connection.
-     * <p/>
+     *
      * Note: This option has no effect when using non-blocking
      * connections.
      */
@@ -360,7 +360,7 @@ public class ApnsServiceBuilder {
 
     /**
      * Specify the reconnection policy for the socket connection.
-     * <p/>
+     *
      * Note: This option has no effect when using non-blocking
      * connections.
      */
@@ -372,11 +372,11 @@ public class ApnsServiceBuilder {
     /**
      * Specify the address of the SOCKS proxy the connection should
      * use.
-     * <p/>
+     *
      * <p>Read the <a href="http://java.sun.com/javase/6/docs/technotes/guides/net/proxies.html">
      * Java Networking and Proxies</a> guide to understand the
      * proxies complexity.
-     * <p/>
+     *
      * <p>Be aware that this method only handles SOCKS proxies, not
      * HTTPS proxies.  Use {@link #withProxy(Proxy)} instead.
      *
@@ -393,7 +393,7 @@ public class ApnsServiceBuilder {
     /**
      * Specify the proxy and the authentication parameters to be used
      * to establish the connections to Apple Servers.
-     * <p/>
+     *
      * <p>Read the <a href="http://java.sun.com/javase/6/docs/technotes/guides/net/proxies.html">
      * Java Networking and Proxies</a> guide to understand the
      * proxies complexity.
@@ -413,7 +413,7 @@ public class ApnsServiceBuilder {
     /**
      * Specify the proxy to be used to establish the connections
      * to Apple Servers
-     * <p/>
+     *
      * <p>Read the <a href="http://java.sun.com/javase/6/docs/technotes/guides/net/proxies.html">
      * Java Networking and Proxies</a> guide to understand the
      * proxies complexity.
@@ -441,7 +441,7 @@ public class ApnsServiceBuilder {
     /**
      * Specify the socket to be used as underlying socket to connect
      * to the APN service.
-     * <p/>
+     *
      * This assumes that the socket connects to a SOCKS proxy.
      *
      * @param proxySocket the underlying socket for connections
@@ -456,10 +456,10 @@ public class ApnsServiceBuilder {
 
     /**
      * Constructs a pool of connections to the notification servers.
-     * <p/>
+     *
      * Apple servers recommend using a pooled connection up to
      * 15 concurrent persistent connections to the gateways.
-     * <p/>
+     *
      * Note: This option has no effect when using non-blocking
      * connections.
      */
@@ -469,13 +469,13 @@ public class ApnsServiceBuilder {
 
     /**
      * Constructs a pool of connections to the notification servers.
-     * <p/>
+     *
      * Apple servers recommend using a pooled connection up to
      * 15 concurrent persistent connections to the gateways.
-     * <p/>
+     *
      * Note: This option has no effect when using non-blocking
      * connections.
-     * <p/>
+     *
      * Note: The maxConnections here is used as a hint to how many connections
      * get created.
      */
@@ -512,7 +512,7 @@ public class ApnsServiceBuilder {
      * Construct service which will process notification requests in batch.
      * After each request batch will wait <code>waitTimeInSec (set as 5sec)</code> for more request to come
      * before executing but not more than <code>maxWaitTimeInSec (set as 10sec)</code>
-     * <p/>
+     *
      * Note: It is not recommended to use pooled connection
      */
     public ApnsServiceBuilder asBatched() {
@@ -523,7 +523,7 @@ public class ApnsServiceBuilder {
      * Construct service which will process notification requests in batch.
      * After each request batch will wait <code>waitTimeInSec</code> for more request to come
      * before executing but not more than <code>maxWaitTimeInSec</code>
-     * <p/>
+     *
      * Note: It is not recommended to use pooled connection
      *
      * @param waitTimeInSec    time to wait for more notification request before executing
@@ -538,11 +538,11 @@ public class ApnsServiceBuilder {
      * Construct service which will process notification requests in batch.
      * After each request batch will wait <code>waitTimeInSec</code> for more request to come
      * before executing but not more than <code>maxWaitTimeInSec</code>
-     * <p/>
+     *
      * Each batch creates new connection and close it after finished.
      * In case reconnect policy is specified it will be applied by batch processing.
      * E.g.: {@link ReconnectPolicy.Provided#EVERY_HALF_HOUR} will reconnect the connection in case batch is running for more than half an hour
-     * <p/>
+     *
      * Note: It is not recommended to use pooled connection
      *
      * @param waitTimeInSec    time to wait for more notification request before executing
@@ -562,7 +562,7 @@ public class ApnsServiceBuilder {
     /**
      * Sets the delegate of the service, that gets notified of the
      * status of message delivery.
-     * <p/>
+     *
      * Note: This option has no effect when using non-blocking
      * connections.
      */
@@ -575,7 +575,7 @@ public class ApnsServiceBuilder {
      * Disables the enhanced error detection, enabled by the
      * enhanced push notification interface.  Error detection is
      * enabled by default.
-     * <p/>
+     *
      * This setting is desired when the application shouldn't spawn
      * new threads.
      *
@@ -588,7 +588,7 @@ public class ApnsServiceBuilder {
 
     /**
      * Provide a custom source for threads used for monitoring connections.
-     * <p/>
+     *
      * This setting is desired when the application must obtain threads from a
      * controlled environment Google App Engine.
      *
