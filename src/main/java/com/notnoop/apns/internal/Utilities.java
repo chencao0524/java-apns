@@ -173,6 +173,13 @@ public final class Utilities {
             return boas.toByteArray();
         } catch (final IOException e) {
             throw new AssertionError();
+        } finally {
+            try {
+                boas.close();
+                dos.close();
+            } catch (IOException e) {
+                e.printStackTrace();
+            }
         }
     }
 
@@ -192,6 +199,13 @@ public final class Utilities {
             return boas.toByteArray();
         } catch (final IOException e) {
             throw new AssertionError();
+        } finally {
+            try {
+                boas.close();
+                dos.close();
+            } catch (IOException e) {
+                e.printStackTrace();
+            }
         }
     }
 
@@ -213,6 +227,12 @@ public final class Utilities {
             } catch (final IOException e) {
                 throw new RuntimeException(e);
             }
+        }
+
+        try {
+            data.close();
+        } catch (IOException e) {
+            e.printStackTrace();
         }
 
         return result;

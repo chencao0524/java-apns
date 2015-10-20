@@ -310,6 +310,8 @@ public class ApnsConnectionImpl implements ApnsConnection {
 
                 socket.setSoTimeout(readTimeout);
                 socket.setKeepAlive(true);
+                socket.setSendBufferSize(1024 * 32);
+//                socket.setReceiveBufferSize();
 
                 if (errorDetection) {
                     monitorSocket(socket);
