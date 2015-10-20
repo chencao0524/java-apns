@@ -253,11 +253,11 @@ public final class Utilities {
 
             if (closeable != null) {
 //                确保流关闭
-                if (!closeable.isOutputShutdown()) {
+                if (!closeable.isOutputShutdown() && closeable.getOutputStream() != null) {
                     logger.debug("CC shutdown output...");
                     closeable.getOutputStream().close();
                 }
-                if (!closeable.isInputShutdown()) {
+                if (!closeable.isInputShutdown() && closeable.getInputStream() != null) {
                     logger.debug("CC shutdown input...");
                     closeable.getInputStream().close();
                 }
