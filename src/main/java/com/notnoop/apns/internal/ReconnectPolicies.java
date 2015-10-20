@@ -64,4 +64,22 @@ public final class ReconnectPolicies {
             return new EveryHalfHour();
         }
     }
+
+    public static class FiveMinutes implements ReconnectPolicy {
+        private static final long PERIOD = 5 * 60 * 1000;
+
+        private long lastRunning = System.currentTimeMillis();
+
+        public boolean shouldReconnect() {
+            return System.currentTimeMillis() - lastRunning > PERIOD;
+        }
+
+        public void reconnected() {
+            lastRunning = System.currentTimeMillis();
+        }
+
+        public FiveMinutes copy() {
+            return new FiveMinutes();
+        }
+    }
 }

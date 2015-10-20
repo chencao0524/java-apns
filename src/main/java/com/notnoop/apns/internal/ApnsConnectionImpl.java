@@ -1,50 +1,50 @@
- /*
- * Copyright 2009, Mahmood Ali.
- * All rights reserved.
- *
- * Redistribution and use in source and binary forms, with or without
- * modification, are permitted provided that the following conditions are
- * met:
- *
- *   * Redistributions of source code must retain the above copyright
- *     notice, this list of conditions and the following disclaimer.
- *   * Redistributions in binary form must reproduce the above
- *     copyright notice, this list of conditions and the following disclaimer
- *     in the documentation and/or other materials provided with the
- *     distribution.
- *   * Neither the name of Mahmood Ali. nor the names of its
- *     contributors may be used to endorse or promote products derived from
- *     this software without specific prior written permission.
- *
- * THIS SOFTWARE IS PROVIDED BY THE COPYRIGHT HOLDERS AND CONTRIBUTORS
- * "AS IS" AND ANY EXPRESS OR IMPLIED WARRANTIES, INCLUDING, BUT NOT
- * LIMITED TO, THE IMPLIED WARRANTIES OF MERCHANTABILITY AND FITNESS FOR
- * A PARTICULAR PURPOSE ARE DISCLAIMED. IN NO EVENT SHALL THE COPYRIGHT
- * OWNER OR CONTRIBUTORS BE LIABLE FOR ANY DIRECT, INDIRECT, INCIDENTAL,
- * SPECIAL, EXEMPLARY, OR CONSEQUENTIAL DAMAGES (INCLUDING, BUT NOT
- * LIMITED TO, PROCUREMENT OF SUBSTITUTE GOODS OR SERVICES; LOSS OF USE,
- * DATA, OR PROFITS; OR BUSINESS INTERRUPTION) HOWEVER CAUSED AND ON ANY
- * THEORY OF LIABILITY, WHETHER IN CONTRACT, STRICT LIABILITY, OR TORT
- * (INCLUDING NEGLIGENCE OR OTHERWISE) ARISING IN ANY WAY OUT OF THE USE
- * OF THIS SOFTWARE, EVEN IF ADVISED OF THE POSSIBILITY OF SUCH DAMAGE.
- */
+/*
+* Copyright 2009, Mahmood Ali.
+* All rights reserved.
+*
+* Redistribution and use in source and binary forms, with or without
+* modification, are permitted provided that the following conditions are
+* met:
+*
+*   * Redistributions of source code must retain the above copyright
+*     notice, this list of conditions and the following disclaimer.
+*   * Redistributions in binary form must reproduce the above
+*     copyright notice, this list of conditions and the following disclaimer
+*     in the documentation and/or other materials provided with the
+*     distribution.
+*   * Neither the name of Mahmood Ali. nor the names of its
+*     contributors may be used to endorse or promote products derived from
+*     this software without specific prior written permission.
+*
+* THIS SOFTWARE IS PROVIDED BY THE COPYRIGHT HOLDERS AND CONTRIBUTORS
+* "AS IS" AND ANY EXPRESS OR IMPLIED WARRANTIES, INCLUDING, BUT NOT
+* LIMITED TO, THE IMPLIED WARRANTIES OF MERCHANTABILITY AND FITNESS FOR
+* A PARTICULAR PURPOSE ARE DISCLAIMED. IN NO EVENT SHALL THE COPYRIGHT
+* OWNER OR CONTRIBUTORS BE LIABLE FOR ANY DIRECT, INDIRECT, INCIDENTAL,
+* SPECIAL, EXEMPLARY, OR CONSEQUENTIAL DAMAGES (INCLUDING, BUT NOT
+* LIMITED TO, PROCUREMENT OF SUBSTITUTE GOODS OR SERVICES; LOSS OF USE,
+* DATA, OR PROFITS; OR BUSINESS INTERRUPTION) HOWEVER CAUSED AND ON ANY
+* THEORY OF LIABILITY, WHETHER IN CONTRACT, STRICT LIABILITY, OR TORT
+* (INCLUDING NEGLIGENCE OR OTHERWISE) ARISING IN ANY WAY OUT OF THE USE
+* OF THIS SOFTWARE, EVEN IF ADVISED OF THE POSSIBILITY OF SUCH DAMAGE.
+*/
 package com.notnoop.apns.internal;
 
 import java.io.EOFException;
 import java.io.IOException;
 import java.io.InputStream;
+import java.io.OutputStream;
 import java.net.InetSocketAddress;
 import java.net.Proxy;
 import java.net.Socket;
 import java.util.LinkedList;
 import java.util.Queue;
-import java.util.concurrent.ConcurrentLinkedQueue;
-import java.util.concurrent.Executors;
-import java.util.concurrent.ThreadFactory;
+import java.util.concurrent.*;
 import java.util.concurrent.atomic.AtomicInteger;
 
 import javax.net.SocketFactory;
 import javax.net.ssl.SSLSocketFactory;
+
 import com.notnoop.apns.ApnsDelegate;
 import com.notnoop.apns.StartSendingApnsDelegate;
 import com.notnoop.apns.ApnsNotification;
@@ -77,6 +77,7 @@ public class ApnsConnectionImpl implements ApnsConnection {
     private final ConcurrentLinkedQueue<ApnsNotification> cachedNotifications, notificationsBuffer;
     private Socket socket;
     private final AtomicInteger threadId = new AtomicInteger(0);
+    private final ExecutorService executors = Executors.newSingleThreadExecutor();
 
     public ApnsConnectionImpl(SocketFactory factory, String host, int port) {
         this(factory, host, port, new ReconnectPolicies.Never(), ApnsDelegate.EMPTY);
@@ -116,11 +117,11 @@ public class ApnsConnectionImpl implements ApnsConnection {
     private ThreadFactory defaultThreadFactory() {
         return new ThreadFactory() {
             ThreadFactory wrapped = Executors.defaultThreadFactory();
+
             @Override
-            public Thread newThread( Runnable r )
-            {
+            public Thread newThread(Runnable r) {
                 Thread result = wrapped.newThread(r);
-                result.setName("MonitoringThread-"+threadId.incrementAndGet());
+                result.setName("MonitoringThread-" + threadId.incrementAndGet());
                 result.setDaemon(true);
                 return result;
             }
@@ -141,16 +142,21 @@ public class ApnsConnectionImpl implements ApnsConnection {
             @Override
             public void run() {
                 logger.debug("Started monitoring thread");
+                InputStream in = null;
                 try {
-                    InputStream in;
                     try {
+                        logger.warn("CC MMMMMMMMMMM-1 ready getInputStream monitorSocket socket = {}", socket);
                         in = socket.getInputStream();
+                        logger.warn("CC MMMMMMMMMMM-1-1 getInputStream end monitorSocket socket = {}", socket);
                     } catch (IOException ioe) {
+                        logger.warn("CC MMMMMMMMMMM-2 IOException = {}, monitorSocket socket = {}", ioe, socket);
                         in = null;
                     }
-
                     byte[] bytes = new byte[EXPECTED_SIZE];
                     while (in != null && readPacket(in, bytes)) {
+
+                        logger.warn("CC MMMMMMMMMMM-3, readpacket monitorSocket socket = {}", socket);
+
                         logger.debug("Error-response packet {}", Utilities.encodeHex(bytes));
                         // Quickly close socket, so we won't ever try to send push notifications
                         // using the defective socket.
@@ -212,7 +218,6 @@ public class ApnsConnectionImpl implements ApnsConnection {
                         delegate.notificationsResent(resendSize);
                     }
                     logger.debug("Monitoring input stream closed by EOF");
-
                 } catch (IOException e) {
                     // An exception when reading the error code is non-critical, it will cause another retry
                     // sending the message. Other than providing a more stable network connection to the APNS
@@ -237,20 +242,40 @@ public class ApnsConnectionImpl implements ApnsConnection {
                 final int len = bytes.length;
                 int n = 0;
                 while (n < len) {
+                    logger.warn("CC RRRRRRR-1 len = {}", len);
                     try {
                         int count = in.read(bytes, n, len - n);
+                        logger.warn("CC RRRRRRR-2 n = {}, count = {}", n, count);
                         if (count < 0) {
-                            throw new EOFException("EOF after reading "+n+" bytes of new packet.");
+                            throw new EOFException("EOF after reading " + n + " bytes of new packet.");
                         }
                         n += count;
                     } catch (IOException ioe) {
-                        if (n == 0)
+                        if (n == 0) {
+                            logger.warn("CC RRRRRRRRRRRR IOException=", ioe);
+                            logger.warn("CC RRRRRRRRRRRR received apple response = {}, readPacket = false", Utilities.encodeHex(bytes));
+
                             return false;
-                        throw new IOException("Error after reading "+n+" bytes of packet", ioe);
+                        }
+                        throw new IOException("Error after reading " + n + " bytes of packet", ioe);
                     }
                 }
+                logger.warn("CC RRRRRRRRRRRR received apple response = {}, readPacket = true", Utilities.encodeHex(bytes));
                 return true;
             }
+
+//            public String bytes2HexString(byte[] b) {
+//                String ret = "";
+//                for (int i = 0; i < b.length; i++) {
+//                    String hex = Integer.toHexString(b[i] & 0xFF);
+//                    if (hex.length() == 1) {
+//                        hex = '0' + hex;
+//                    }
+//                    ret += hex.toUpperCase();
+//
+//                }
+//                return ret;
+//            }
         });
         t.start();
     }
@@ -309,12 +334,15 @@ public class ApnsConnectionImpl implements ApnsConnection {
     private static final int RETRIES = 3;
 
     public synchronized void sendMessage(ApnsNotification m) throws NetworkIOException {
+        logger.warn("CC enter impl sendMessage, ApnsNotification = {}", m);
         sendMessage(m, false);
         drainBuffer();
     }
 
-    private synchronized void sendMessage(ApnsNotification m, boolean fromBuffer) throws NetworkIOException {
+    private synchronized void sendMessage(final ApnsNotification m, final boolean fromBuffer) throws NetworkIOException {
         logger.debug("sendMessage {} fromBuffer: {}", m, fromBuffer);
+
+        logger.warn("CC SSSSSSSSSSS enter sendMessage {} fromBuffer: {} socket is {}", m, fromBuffer, (socket == null || socket.isClosed()) ? null : socket);
 
         if (delegate instanceof StartSendingApnsDelegate) {
             ((StartSendingApnsDelegate) delegate).startSending(m, fromBuffer);
@@ -322,11 +350,44 @@ public class ApnsConnectionImpl implements ApnsConnection {
 
         int attempts = 0;
         while (true) {
+
             try {
                 attempts++;
-                Socket socket = getOrCreateSocket(fromBuffer);
+
+                logger.warn("CC SSSSSSSSSSS-0 ready");
+                final Socket socket = getOrCreateSocket(fromBuffer);
+
+                logger.warn("CC SSSSSSSSSSS-1 ready socket = {}, isConnected = {}, isInputShutdown = {}, isOutputShutdown = {}", socket, socket.isConnected(), socket.isInputShutdown(), socket.isOutputShutdown());
+
+//                Future<Void> future = executors.submit(new Callable<Void>() {
+//                    public Void call() throws Exception {
+                logger.warn("CC SSSSSSSSSSS-2 ready write nitifacation = {}", m);
                 socket.getOutputStream().write(m.marshall());
+                logger.warn("CC SSSSSSSSSSS-3 ready flush nitifacation = {}", m);
                 socket.getOutputStream().flush();
+//                        return null;
+//                    }
+//                });
+
+
+//                try {
+//                    logger.warn("CC SSSSSSSSSSS-wait-write ready wait for write nitifacation = {}", m);
+//                    future.get(30, TimeUnit.SECONDS);
+//
+//                } catch (InterruptedException e) {
+//                    logger.warn("CC SSSSSSSSSSS-wait-write meet InterruptedException nitifacation = {}", m);
+//                    Thread.currentThread().interrupt();
+//                    throw new IOException(e.getCause());
+//                } catch (ExecutionException e) {
+//                    logger.warn("CC SSSSSSSSSSS-wait-write meet ExecutionException nitifacation = {}", m);
+//                    throw new IOException(e.getCause());
+//                } catch (TimeoutException e) {
+//                    logger.warn("CC SSSSSSSSSSS-wait-write meet TimeoutException nitifacation = {}", m);
+//                    throw new IOException(e.getCause());
+//                }
+
+
+                logger.warn("CC SSSSSSSSSSS-4 ready cache nitifacation = {}", m);
                 cacheNotification(m);
 
                 delegate.messageSent(m, fromBuffer);
@@ -335,6 +396,7 @@ public class ApnsConnectionImpl implements ApnsConnection {
                 attempts = 0;
                 break;
             } catch (IOException e) {
+                logger.warn("CC SSSSSSSSSSS-5 catch exception nitifacation = {}, IOException = {}, attempts = {}, close socket = {}", m, e, attempts, socket);
                 Utilities.close(socket);
                 if (attempts >= RETRIES) {
                     logger.error("Couldn't send message after " + RETRIES + " retries." + m, e);
@@ -348,9 +410,18 @@ public class ApnsConnectionImpl implements ApnsConnection {
                 // which uses the delay.
 
                 if (attempts != 1) {
+                    logger.warn("CC SSSSSSSSSSS-6 retry send nitifacation = {}, attempts = {}", m, attempts);
                     logger.info("Failed to send message " + m + "... trying again after delay", e);
                     Utilities.sleep(DELAY_IN_MS);
                 }
+            } finally {
+//                if(os != null) {
+//                    try {
+//                        os.close();
+//                    } catch (IOException e) {
+//                        e.printStackTrace();
+//                    }
+//                }
             }
         }
     }
@@ -361,8 +432,7 @@ public class ApnsConnectionImpl implements ApnsConnection {
             final ApnsNotification notification = notificationsBuffer.poll();
             try {
                 sendMessage(notification, true);
-            }
-            catch (NetworkIOException ex) {
+            } catch (NetworkIOException ex) {
                 // at this point we are retrying the submission of messages but failing to connect to APNS, therefore
                 // notify the client of this
                 delegate.messageSendFailed(notification, ex);

@@ -41,18 +41,24 @@ import com.notnoop.apns.ApnsNotification;
 import com.notnoop.apns.ApnsService;
 import com.notnoop.apns.EnhancedApnsNotification;
 import com.notnoop.exceptions.NetworkIOException;
+import org.slf4j.Logger;
+import org.slf4j.LoggerFactory;
 
 abstract class AbstractApnsService implements ApnsService {
     private ApnsFeedbackConnection feedback;
     private AtomicInteger c = new AtomicInteger();
+
+    private static final Logger logger = LoggerFactory.getLogger(AbstractApnsService.class);
 
     public AbstractApnsService(ApnsFeedbackConnection feedback) {
         this.feedback = feedback;
     }
 
     public EnhancedApnsNotification push(String deviceToken, String payload) throws NetworkIOException {
+        // logger.warn("CC enter AbstractApnsService push ...deviceToken = {}, payload = {}", deviceToken, payload);
         EnhancedApnsNotification notification =
             new EnhancedApnsNotification(c.incrementAndGet(), EnhancedApnsNotification.MAXIMUM_EXPIRY, deviceToken, payload);
+        //logger.warn("CC enter AbstractApnsService push ...deviceToken = {}, payload = {}, build EnhancedApnsNotification = {}", deviceToken, payload, notification );
         push(notification);
         return notification;
     }

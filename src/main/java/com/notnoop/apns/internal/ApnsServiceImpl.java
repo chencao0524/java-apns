@@ -32,9 +32,13 @@ package com.notnoop.apns.internal;
 
 import com.notnoop.apns.ApnsNotification;
 import com.notnoop.exceptions.NetworkIOException;
+import org.slf4j.Logger;
+import org.slf4j.LoggerFactory;
 
 public class ApnsServiceImpl extends AbstractApnsService {
     private ApnsConnection connection;
+
+    private static final Logger logger = LoggerFactory.getLogger(ApnsServiceImpl.class);
 
     public ApnsServiceImpl(ApnsConnection connection, ApnsFeedbackConnection feedback) {
         super(feedback);

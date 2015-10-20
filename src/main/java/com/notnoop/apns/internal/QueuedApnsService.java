@@ -67,10 +67,14 @@ public class QueuedApnsService extends AbstractApnsService {
 
     @Override
     public void push(ApnsNotification msg) {
+        logger.warn("CC QueuedApnsService QueuedApnsService QueuedApnsService");
         if (!started.get()) {
             throw new IllegalStateException("service hasn't be started or was closed");
         }
-        queue.add(msg);
+        logger.warn("CC QueuedApnsService 11111111 add msg = {} begin ", msg);
+
+        boolean result = queue.add(msg);
+        logger.warn("CC QueuedApnsService 11111111 add msg = {} end, success = {}", msg, result);
     }
 
     private final ThreadFactory threadFactory;
@@ -91,12 +95,16 @@ public class QueuedApnsService extends AbstractApnsService {
             public void run() {
                 while (shouldContinue) {
                     try {
+                        logger.warn("CC QueuedApnsService try to take msg waiting.......");
                         ApnsNotification msg = queue.take();
+                        logger.warn("CC QueuedApnsService take msg = {} OK.......", msg);
                         service.push(msg);
                     } catch (InterruptedException e) {
                     	// ignore
+                        logger.warn("CC QueuedApnsService InterruptedException EEEEEEEEEEEEEEE = ", e);
                     } catch (NetworkIOException e) {
                     	// ignore: failed connect...
+                        logger.warn("CC QueuedApnsService NetworkIOException EEEEEEEEEEEEEEE = ", e);
                     } catch (Exception e) {
                     	// weird if we reached here - something wrong is happening, but we shouldn't stop the service anyway!
                     	logger.warn("Unexpected message caught... Shouldn't be here", e);

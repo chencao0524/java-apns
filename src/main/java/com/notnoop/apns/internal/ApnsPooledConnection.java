@@ -38,21 +38,25 @@ public class ApnsPooledConnection implements ApnsConnection {
     };
 
     public void sendMessage(final ApnsNotification m) throws NetworkIOException {
+        logger.warn("CC enter ApnsPooledConnection sendMessage {}", m);
         Future<Void> future = executors.submit(new Callable<Void>() {
             public Void call() throws Exception {
+                logger.warn("CC enter ApnsPooledConnection sendMessage {}, executors.submit.....", m);
                 uniquePrototype.get().sendMessage(m);
                 return null;
             }
         });
-        try {
-            future.get();
-        } catch (InterruptedException ie) {
-            Thread.currentThread().interrupt();
-        } catch (ExecutionException ee) {
-            if (ee.getCause() instanceof NetworkIOException) {
-                throw (NetworkIOException) ee.getCause();
-            }
-        }
+//        try {
+//            logger.warn("CC ApnsPooledConnection submit task and wait...sendMessage {}", m);
+//            future.get();
+//            logger.warn("CC ApnsPooledConnection task is completed...sendMessage {}", m);
+//        } catch (InterruptedException ie) {
+//            Thread.currentThread().interrupt();
+//        } catch (ExecutionException ee) {
+//            if (ee.getCause() instanceof NetworkIOException) {
+//                throw (NetworkIOException) ee.getCause();
+//            }
+//        }
     }
 
     public ApnsConnection copy() {

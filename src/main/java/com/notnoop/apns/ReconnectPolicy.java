@@ -98,6 +98,20 @@ public interface ReconnectPolicy {
         },
 
         /**
+         * Makes a new connection if the current connection has lasted for more than half an hour.
+         * <p>
+         * This is the recommended mode.
+         * <p>
+         * This is the sweat-spot in my experiments between dropped connections while minimizing latency.
+         */
+        FIVE_MINUTE {
+            @Override
+            public ReconnectPolicy newObject() {
+                return new ReconnectPolicies.FiveMinutes();
+            }
+        },
+
+        /**
          * Makes a new connection for every message being sent.
          *
          * This option ensures that each message is actually

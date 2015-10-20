@@ -75,7 +75,7 @@ public class ApnsServiceBuilder {
     private SSLContext sslContext;
 
     private int readTimeout = 0;
-    private int connectTimeout = 0;
+    private int connectTimeout = 30000;
 
     private String gatewayHost;
     private int gatewayPort = -1;
@@ -87,7 +87,8 @@ public class ApnsServiceBuilder {
     private boolean autoAdjustCacheLength = true;
     private ExecutorService executor = null;
 
-    private ReconnectPolicy reconnectPolicy = ReconnectPolicy.Provided.EVERY_HALF_HOUR.newObject();
+    //    private ReconnectPolicy reconnectPolicy = ReconnectPolicy.Provided.EVERY_HALF_HOUR.newObject();
+    private ReconnectPolicy reconnectPolicy = ReconnectPolicy.Provided.FIVE_MINUTE.newObject();
     private boolean isQueued = false;
     private ThreadFactory queueThreadFactory = null;
     

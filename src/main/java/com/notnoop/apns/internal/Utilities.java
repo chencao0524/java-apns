@@ -246,9 +246,21 @@ public final class Utilities {
         logger.debug("close {}", closeable);
 
         try {
+
             if (closeable != null) {
+                //            确保流关闭
+                if (!closeable.isOutputShutdown()) {
+                    logger.warn("CC shutdown output...a");
+                    closeable.getOutputStream().close();
+                }
+                if (!closeable.isInputShutdown()) {
+                    logger.warn("CC shutdown input...a");
+                    closeable.getInputStream().close();
+                }
                 closeable.close();
             }
+
+
         } catch (final IOException e) {
             logger.debug("error while closing socket", e);
         }
