@@ -253,13 +253,15 @@ public final class Utilities {
 
             if (closeable != null) {
 //                确保流关闭
-                if (closeable.getOutputStream() != null && !closeable.isOutputShutdown()) {
-                    logger.debug("CC shutdown output...");
+                if (!closeable.isClosed() && closeable.getOutputStream() != null && !closeable.isOutputShutdown()) {
+                    logger.debug("CC shutdown output...soket = {}", closeable);
                     closeable.getOutputStream().close();
+                    logger.debug("CC shutdown output...soket = {}, OOOOOOOOOOOOOOOOOOOOOOO", closeable);
                 }
-                if (closeable.getInputStream() != null && !closeable.isInputShutdown()) {
-                    logger.debug("CC shutdown input...");
+                if (!closeable.isClosed() && closeable.getInputStream() != null && !closeable.isInputShutdown()) {
+                    logger.debug("CC shutdown input...soket = {}", closeable);
                     closeable.getInputStream().close();
+                    logger.debug("CC shutdown input...soket = {}, IIIIIIIIIIIIIIIIIIIIIII", closeable);
                 }
                 closeable.close();
             }
