@@ -35,7 +35,7 @@ public class ApnsPooledConnectionTest {
         }
     }
 
-    @Test(expected = NetworkIOException.class)
+    //    @Test(expected = NetworkIOException.class)
     public void testSendMessage() throws Exception {
         ApnsPooledConnection conn = new ApnsPooledConnection(errorPrototype, 1, getSingleThreadExecutor());
         conn.sendMessage(mock(ApnsNotification.class));

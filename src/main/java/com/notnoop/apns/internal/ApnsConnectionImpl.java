@@ -253,7 +253,7 @@ public class ApnsConnectionImpl implements ApnsConnection {
                         n += count;
                     } catch (IOException ioe) {
                         if (n == 0) {
-                            logger.debug("CC RRRRRRRRRRRR IOException=", ioe);
+//                            logger.debug("CC RRRRRRRRRRRR IOException=", ioe);
                             logger.debug("CC RRRRRRRRRRRR received apple response = {}, readPacket = false", Utilities.encodeHex(bytes));
 
                             return false;

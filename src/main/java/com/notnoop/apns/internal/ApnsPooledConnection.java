@@ -47,13 +47,18 @@ public class ApnsPooledConnection implements ApnsConnection {
             }
         });
 //        try {
+//            System.out.println("CCCCCC-1");
 //            logger.debug("CC ApnsPooledConnection submit task and wait...sendMessage {}", m);
 //            future.get();
+//            System.out.println("CCCCCC-2");
 //            logger.debug("CC ApnsPooledConnection task is completed...sendMessage {}", m);
 //        } catch (InterruptedException ie) {
+//            System.out.println("CCCCCC-3");
 //            Thread.currentThread().interrupt();
 //        } catch (ExecutionException ee) {
+//            System.out.println("CCCCCC-4");
 //            if (ee.getCause() instanceof NetworkIOException) {
+//                System.out.println("CCCCCC-5");
 //                throw (NetworkIOException) ee.getCause();
 //            }
 //        }
