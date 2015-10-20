@@ -49,6 +49,7 @@ import javax.net.ssl.KeyManagerFactory;
 import javax.net.ssl.SSLContext;
 import javax.net.ssl.SSLSocketFactory;
 import javax.net.ssl.TrustManagerFactory;
+
 import com.notnoop.exceptions.InvalidSSLConfig;
 import com.notnoop.exceptions.NetworkIOException;
 import org.slf4j.Logger;
@@ -71,47 +72,50 @@ public final class Utilities {
 
     public static final int MAX_PAYLOAD_LENGTH = 2048;
 
-    private Utilities() { throw new AssertionError("Uninstantiable class"); }
+    private Utilities() {
+        throw new AssertionError("Uninstantiable class");
+    }
 
     public static SSLSocketFactory newSSLSocketFactory(final InputStream cert, final String password,
-         final String ksType, final String ksAlgorithm) throws InvalidSSLConfig {
+                                                       final String ksType, final String ksAlgorithm) throws InvalidSSLConfig {
         final SSLContext context = newSSLContext(cert, password, ksType, ksAlgorithm);
         return context.getSocketFactory();
     }
 
     public static SSLContext newSSLContext(final InputStream cert, final String password,
-            final String ksType, final String ksAlgorithm) throws InvalidSSLConfig {
-           try {
-               final KeyStore ks = KeyStore.getInstance(ksType);
-               ks.load(cert, password.toCharArray());
-               return newSSLContext(ks, password, ksAlgorithm);
-           } catch (final Exception e) {
-               throw new InvalidSSLConfig(e);
-           }
-       }
-    
+                                           final String ksType, final String ksAlgorithm) throws InvalidSSLConfig {
+        try {
+            final KeyStore ks = KeyStore.getInstance(ksType);
+            ks.load(cert, password.toCharArray());
+            return newSSLContext(ks, password, ksAlgorithm);
+        } catch (final Exception e) {
+            throw new InvalidSSLConfig(e);
+        }
+    }
+
     public static SSLContext newSSLContext(final KeyStore ks, final String password,
-            final String ksAlgorithm) throws InvalidSSLConfig {
-           try {
-               // Get a KeyManager and initialize it
-               final KeyManagerFactory kmf = KeyManagerFactory.getInstance(ksAlgorithm);
-               kmf.init(ks, password.toCharArray());
+                                           final String ksAlgorithm) throws InvalidSSLConfig {
+        try {
+            // Get a KeyManager and initialize it
+            final KeyManagerFactory kmf = KeyManagerFactory.getInstance(ksAlgorithm);
+            kmf.init(ks, password.toCharArray());
 
-               // Get a TrustManagerFactory with the DEFAULT KEYSTORE, so we have all
-               // the certificates in cacerts trusted
-               final TrustManagerFactory tmf = TrustManagerFactory.getInstance(ksAlgorithm);
-               tmf.init((KeyStore)null);
+            // Get a TrustManagerFactory with the DEFAULT KEYSTORE, so we have all
+            // the certificates in cacerts trusted
+            final TrustManagerFactory tmf = TrustManagerFactory.getInstance(ksAlgorithm);
+            tmf.init((KeyStore) null);
 
-               // Get the SSLContext to help create SSLSocketFactory
-               final SSLContext sslContext = SSLContext.getInstance("TLS");
-               sslContext.init(kmf.getKeyManagers(), tmf.getTrustManagers(), null);
-               return sslContext;
-           } catch (final GeneralSecurityException e) {
-               throw new InvalidSSLConfig(e);
-           }
-       }
+            // Get the SSLContext to help create SSLSocketFactory
+            final SSLContext sslContext = SSLContext.getInstance("TLS");
+            sslContext.init(kmf.getKeyManagers(), tmf.getTrustManagers(), null);
+            return sslContext;
+        } catch (final GeneralSecurityException e) {
+            throw new InvalidSSLConfig(e);
+        }
+    }
 
     private static final Pattern pattern = Pattern.compile("[ -]");
+
     public static byte[] decodeHex(final String deviceToken) {
         final String hex = pattern.matcher(deviceToken).replaceAll("");
 
@@ -134,7 +138,7 @@ public final class Utilities {
         }
     }
 
-    private static final char base[] = {'0','1','2','3','4','5','6','7','8','9','A','B','C','D','E','F'};
+    private static final char base[] = {'0', '1', '2', '3', '4', '5', '6', '7', '8', '9', 'A', 'B', 'C', 'D', 'E', 'F'};
 
     public static String encodeHex(final byte[] bytes) {
         final char[] chars = new char[bytes.length * 2];
@@ -173,7 +177,7 @@ public final class Utilities {
     }
 
     public static byte[] marshallEnhanced(final byte command, final int identifier,
-            final int expiryTime, final byte[] deviceToken, final byte[] payload) {
+                                          final int expiryTime, final byte[] deviceToken, final byte[] payload) {
         final ByteArrayOutputStream boas = new ByteArrayOutputStream();
         final DataOutputStream dos = new DataOutputStream(boas);
 
@@ -248,13 +252,13 @@ public final class Utilities {
         try {
 
             if (closeable != null) {
-                //            确保流关闭
+//                确保流关闭
                 if (!closeable.isOutputShutdown()) {
-                    logger.warn("CC shutdown output...a");
+                    logger.debug("CC shutdown output...");
                     closeable.getOutputStream().close();
                 }
                 if (!closeable.isInputShutdown()) {
-                    logger.warn("CC shutdown input...a");
+                    logger.debug("CC shutdown input...");
                     closeable.getInputStream().close();
                 }
                 closeable.close();
@@ -293,11 +297,11 @@ public final class Utilities {
 
     public static void wrapAndThrowAsRuntimeException(final Exception e) throws NetworkIOException {
         if (e instanceof IOException) {
-            throw new NetworkIOException((IOException)e);
+            throw new NetworkIOException((IOException) e);
         } else if (e instanceof NetworkIOException) {
-            throw (NetworkIOException)e;
+            throw (NetworkIOException) e;
         } else if (e instanceof RuntimeException) {
-            throw (RuntimeException)e;
+            throw (RuntimeException) e;
         } else {
             throw new RuntimeException(e);
         }
@@ -305,10 +309,10 @@ public final class Utilities {
 
     @SuppressWarnings({"PointlessArithmeticExpression", "PointlessBitwiseExpression"})
     public static int parseBytes(final int b1, final int b2, final int b3, final int b4) {
-        return  ((b1 << 3 * 8) & 0xFF000000)
-              | ((b2 << 2 * 8) & 0x00FF0000)
-              | ((b3 << 1 * 8) & 0x0000FF00)
-              | ((b4 << 0 * 8) & 0x000000FF);
+        return ((b1 << 3 * 8) & 0xFF000000)
+                | ((b2 << 2 * 8) & 0x00FF0000)
+                | ((b3 << 1 * 8) & 0x0000FF00)
+                | ((b4 << 0 * 8) & 0x000000FF);
     }
 
     // @see http://stackoverflow.com/questions/119328/how-do-i-truncate-a-java-string-to-fit-in-a-given-number-of-bytes-once-utf-8-enc
@@ -322,8 +326,7 @@ public final class Utilities {
             int more;
             if (c <= 0x007f) {
                 more = 1;
-            }
-            else if (c <= 0x07FF) {
+            } else if (c <= 0x07FF) {
                 more = 2;
             } else if (c <= 0xd7ff) {
                 more = 3;

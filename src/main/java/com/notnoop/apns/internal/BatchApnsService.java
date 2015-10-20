@@ -69,7 +69,6 @@ public class BatchApnsService extends AbstractApnsService {
 
 	@Override
 	public void push(ApnsNotification message) throws NetworkIOException {
-		logger.warn("CC BatchApnsService BatchApnsService BatchApnsService");
 		if (batch.isEmpty()) {
 			firstMessageArrivedTime = System.nanoTime();
 		}

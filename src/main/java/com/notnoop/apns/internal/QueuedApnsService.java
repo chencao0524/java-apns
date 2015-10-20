@@ -47,8 +47,8 @@ import com.notnoop.exceptions.NetworkIOException;
 
 public class QueuedApnsService extends AbstractApnsService {
 
-	private static final Logger logger = LoggerFactory.getLogger(QueuedApnsService.class);
-	
+    private static final Logger logger = LoggerFactory.getLogger(QueuedApnsService.class);
+
     private ApnsService service;
     private BlockingQueue<ApnsNotification> queue;
     private AtomicBoolean started = new AtomicBoolean(false);
@@ -67,14 +67,13 @@ public class QueuedApnsService extends AbstractApnsService {
 
     @Override
     public void push(ApnsNotification msg) {
-        logger.warn("CC QueuedApnsService QueuedApnsService QueuedApnsService");
+        logger.debug("CC QueuedApnsService QueuedApnsService QueuedApnsService");
         if (!started.get()) {
             throw new IllegalStateException("service hasn't be started or was closed");
         }
-        logger.warn("CC QueuedApnsService 11111111 add msg = {} begin ", msg);
-
+        logger.debug("CC QueuedApnsService 11111111 add msg = {} begin ", msg);
         boolean result = queue.add(msg);
-        logger.warn("CC QueuedApnsService 11111111 add msg = {} end, success = {}", msg, result);
+        logger.debug("CC QueuedApnsService 11111111 add msg = {} end, success = {}", msg, result);
     }
 
     private final ThreadFactory threadFactory;
@@ -95,19 +94,19 @@ public class QueuedApnsService extends AbstractApnsService {
             public void run() {
                 while (shouldContinue) {
                     try {
-                        logger.warn("CC QueuedApnsService try to take msg waiting.......");
+                        logger.debug("CC QueuedApnsService try to take msg waiting.......");
                         ApnsNotification msg = queue.take();
-                        logger.warn("CC QueuedApnsService take msg = {} OK.......", msg);
+                        logger.debug("CC QueuedApnsService take msg = {} OK.......", msg);
                         service.push(msg);
                     } catch (InterruptedException e) {
-                    	// ignore
-                        logger.warn("CC QueuedApnsService InterruptedException EEEEEEEEEEEEEEE = ", e);
+                        // ignore
+                        logger.debug("CC QueuedApnsService InterruptedException EEEEEEEEEEEEEEE = ", e);
                     } catch (NetworkIOException e) {
-                    	// ignore: failed connect...
-                        logger.warn("CC QueuedApnsService NetworkIOException EEEEEEEEEEEEEEE = ", e);
+                        // ignore: failed connect...
+                        logger.debug("CC QueuedApnsService NetworkIOException EEEEEEEEEEEEEEE = ", e);
                     } catch (Exception e) {
-                    	// weird if we reached here - something wrong is happening, but we shouldn't stop the service anyway!
-                    	logger.warn("Unexpected message caught... Shouldn't be here", e);
+                        // weird if we reached here - something wrong is happening, but we shouldn't stop the service anyway!
+                        logger.warn("Unexpected message caught... Shouldn't be here", e);
                     }
                 }
             }

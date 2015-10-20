@@ -53,14 +53,14 @@ import static com.notnoop.apns.internal.Utilities.*;
 
 /**
  * The class is used to create instances of {@link ApnsService}.
- *
+ * <p/>
  * Note that this class is not synchronized.  If multiple threads access a
  * {@code ApnsServiceBuilder} instance concurrently, and at least on of the
  * threads modifies one of the attributes structurally, it must be
  * synchronized externally.
- *
+ * <p/>
  * Starting a new {@code ApnsService} is easy:
- *
+ * <p/>
  * <pre>
  *   ApnsService = APNS.newService()
  *    .withCert("/path/to/certificate.p12", "MyCertPassword")
@@ -70,7 +70,7 @@ import static com.notnoop.apns.internal.Utilities.*;
  */
 public class ApnsServiceBuilder {
     private static final String KEYSTORE_TYPE = "PKCS12";
-    private static final String KEY_ALGORITHM = ((java.security.Security.getProperty("ssl.KeyManagerFactory.algorithm") == null)? "sunx509" : java.security.Security.getProperty("ssl.KeyManagerFactory.algorithm"));
+    private static final String KEY_ALGORITHM = ((java.security.Security.getProperty("ssl.KeyManagerFactory.algorithm") == null) ? "sunx509" : java.security.Security.getProperty("ssl.KeyManagerFactory.algorithm"));
 
     private SSLContext sslContext;
 
@@ -87,16 +87,16 @@ public class ApnsServiceBuilder {
     private boolean autoAdjustCacheLength = true;
     private ExecutorService executor = null;
 
-    //    private ReconnectPolicy reconnectPolicy = ReconnectPolicy.Provided.EVERY_HALF_HOUR.newObject();
-    private ReconnectPolicy reconnectPolicy = ReconnectPolicy.Provided.FIVE_MINUTE.newObject();
+    private ReconnectPolicy reconnectPolicy = ReconnectPolicy.Provided.EVERY_HALF_HOUR.newObject();
+    //    private ReconnectPolicy reconnectPolicy = ReconnectPolicy.Provided.FIVE_MINUTE.newObject();
     private boolean isQueued = false;
     private ThreadFactory queueThreadFactory = null;
-    
+
     private boolean isBatched = false;
     private int batchWaitTimeInSec;
     private int batchMaxWaitTimeInSec;
     private ThreadFactory batchThreadFactory = null;
-    
+
     private ApnsDelegate delegate = ApnsDelegate.EMPTY;
     private Proxy proxy = null;
     private String proxyUsername = null;
@@ -107,18 +107,20 @@ public class ApnsServiceBuilder {
     /**
      * Constructs a new instance of {@code ApnsServiceBuilder}
      */
-    public ApnsServiceBuilder() { sslContext = null; }
+    public ApnsServiceBuilder() {
+        sslContext = null;
+    }
 
     /**
      * Specify the certificate used to connect to Apple APNS
      * servers.  This relies on the path (absolute or relative to
      * working path) to the keystore (*.p12) containing the
      * certificate, along with the given password.
-     *
+     * <p/>
      * The keystore needs to be of PKCS12 and the keystore
      * needs to be encrypted using the SunX509 algorithm.  Both
      * of these settings are the default.
-     *
+     * <p/>
      * This library does not support password-less p12 certificates, due to a
      * Oracle Java library <a href="http://bugs.sun.com/bugdatabase/view_bug.do?bug_id=6415637">
      * Bug 6415637</a>.  There are three workarounds: use a password-protected
@@ -126,16 +128,16 @@ public class ApnsServiceBuilder {
      * the `SSLContext` yourself!  Needless to say, the password-protected
      * certificate is most recommended option.
      *
-     * @param fileName  the path to the certificate
-     * @param password  the password of the keystore
-     * @return  this
+     * @param fileName the path to the certificate
+     * @param password the password of the keystore
+     * @return this
      * @throws RuntimeIOException if it {@code fileName} cannot be
-     *          found or read
-     * @throws InvalidSSLConfig if fileName is invalid Keystore
-     *  or the password is invalid
+     *                            found or read
+     * @throws InvalidSSLConfig   if fileName is invalid Keystore
+     *                            or the password is invalid
      */
     public ApnsServiceBuilder withCert(String fileName, String password)
-    throws RuntimeIOException, InvalidSSLConfig {
+            throws RuntimeIOException, InvalidSSLConfig {
         FileInputStream stream = null;
         try {
             stream = new FileInputStream(fileName);
@@ -151,11 +153,11 @@ public class ApnsServiceBuilder {
      * Specify the certificate used to connect to Apple APNS
      * servers.  This relies on the stream of keystore (*.p12)
      * containing the certificate, along with the given password.
-     *
+     * <p/>
      * The keystore needs to be of PKCS12 and the keystore
      * needs to be encrypted using the SunX509 algorithm.  Both
      * of these settings are the default.
-     *
+     * <p/>
      * This library does not support password-less p12 certificates, due to a
      * Oracle Java library <a href="http://bugs.sun.com/bugdatabase/view_bug.do?bug_id=6415637">
      * Bug 6415637</a>.  There are three workarounds: use a password-protected
@@ -163,14 +165,14 @@ public class ApnsServiceBuilder {
      * the `SSLContext` yourself!  Needless to say, the password-protected
      * certificate is most recommended option.
      *
-     * @param stream    the keystore represented as input stream
-     * @param password  the password of the keystore
-     * @return  this
+     * @param stream   the keystore represented as input stream
+     * @param password the password of the keystore
+     * @return this
      * @throws InvalidSSLConfig if stream is invalid Keystore
-     *  or the password is invalid
+     *                          or the password is invalid
      */
     public ApnsServiceBuilder withCert(InputStream stream, String password)
-    throws InvalidSSLConfig {
+            throws InvalidSSLConfig {
         assertPasswordNotEmpty(password);
         return withSSLContext(
                 newSSLContext(stream, password,
@@ -181,7 +183,7 @@ public class ApnsServiceBuilder {
      * Specify the certificate used to connect to Apple APNS
      * servers.  This relies on a keystore (*.p12)
      * containing the certificate, along with the given password.
-     *
+     * <p/>
      * This library does not support password-less p12 certificates, due to a
      * Oracle Java library <a href="http://bugs.sun.com/bugdatabase/view_bug.do?bug_id=6415637">
      * Bug 6415637</a>.  There are three workarounds: use a password-protected
@@ -189,76 +191,78 @@ public class ApnsServiceBuilder {
      * the `SSLContext` yourself!  Needless to say, the password-protected
      * certificate is most recommended option.
      *
-     * @param keyStore  the keystore
-     * @param password  the password of the keystore
-     * @return  this
+     * @param keyStore the keystore
+     * @param password the password of the keystore
+     * @return this
      * @throws InvalidSSLConfig if stream is invalid Keystore
-     *  or the password is invalid
+     *                          or the password is invalid
      */
     public ApnsServiceBuilder withCert(KeyStore keyStore, String password)
-    throws InvalidSSLConfig {
+            throws InvalidSSLConfig {
         assertPasswordNotEmpty(password);
         return withSSLContext(
                 newSSLContext(keyStore, password, KEY_ALGORITHM));
     }
-    
-	private void assertPasswordNotEmpty(String password) {
-		if (password == null || password.length() == 0) {
+
+    private void assertPasswordNotEmpty(String password) {
+        if (password == null || password.length() == 0) {
             throw new IllegalArgumentException("Passwords must be specified." +
                     "Oracle Java SDK does not support passwordless p12 certificates");
         }
-	}
-    
+    }
+
     /**
      * Specify the SSLContext that should be used to initiate the
      * connection to Apple Server.
-     *
+     * <p/>
      * Most clients would use {@link #withCert(InputStream, String)}
      * or {@link #withCert(String, String)} instead.  But some
      * clients may need to represent the Keystore in a different
      * format than supported.
      *
-     * @param sslContext    Context to be used to create secure connections
-     * @return  this
+     * @param sslContext Context to be used to create secure connections
+     * @return this
      */
     public ApnsServiceBuilder withSSLContext(SSLContext sslContext) {
         this.sslContext = sslContext;
         return this;
     }
-    
+
     /**
      * Specify the timeout value to be set in new setSoTimeout in created
      * sockets, for both feedback and push connections, in milliseconds.
+     *
      * @param readTimeout timeout value to be set in new setSoTimeout
      * @return this
      */
     public ApnsServiceBuilder withReadTimeout(int readTimeout) {
-    	this.readTimeout = readTimeout;
-    	return this;
+        this.readTimeout = readTimeout;
+        return this;
     }
 
     /**
      * Specify the timeout value to use for connectionTimeout in created
      * sockets, for both feedback and push connections, in milliseconds.
+     *
      * @param connectTimeout timeout value to use for connectionTimeout
      * @return this
      */
     public ApnsServiceBuilder withConnectTimeout(int connectTimeout) {
-    	this.connectTimeout = connectTimeout;
-    	return this;
+        this.connectTimeout = connectTimeout;
+        return this;
     }
 
     /**
      * Specify the gateway server for sending Apple iPhone
      * notifications.
-     *
+     * <p/>
      * Most clients should use {@link #withSandboxDestination()}
      * or {@link #withProductionDestination()}.  Clients may use
      * this method to connect to mocking tests and such.
      *
-     * @param host  hostname the notification gateway of Apple
-     * @param port  port of the notification gateway of Apple
-     * @return  this
+     * @param host hostname the notification gateway of Apple
+     * @param port port of the notification gateway of Apple
+     * @return this
      */
     public ApnsServiceBuilder withGatewayDestination(String host, int port) {
         this.gatewayHost = host;
@@ -269,13 +273,13 @@ public class ApnsServiceBuilder {
     /**
      * Specify the Feedback for getting failed devices from
      * Apple iPhone Push servers.
-     *
+     * <p/>
      * Most clients should use {@link #withSandboxDestination()}
      * or {@link #withProductionDestination()}.  Clients may use
      * this method to connect to mocking tests and such.
      *
-     * @param host  hostname of the feedback server of Apple
-     * @param port  port of the feedback server of Apple
+     * @param host hostname of the feedback server of Apple
+     * @param port port of the feedback server of Apple
      * @return this
      */
     public ApnsServiceBuilder withFeedbackDestination(String host, int port) {
@@ -286,12 +290,12 @@ public class ApnsServiceBuilder {
 
     /**
      * Specify to use Apple servers as iPhone gateway and feedback servers.
-     *
+     * <p/>
      * If the passed {@code isProduction} is true, then it connects to the
      * production servers, otherwise, it connects to the sandbox servers
      *
-     * @param isProduction  determines which Apple servers should be used:
-     *               production or sandbox
+     * @param isProduction determines which Apple servers should be used:
+     *                     production or sandbox
      * @return this
      */
     public ApnsServiceBuilder withAppleDestination(boolean isProduction) {
@@ -305,35 +309,35 @@ public class ApnsServiceBuilder {
     /**
      * Specify to use the Apple sandbox servers as iPhone gateway
      * and feedback servers.
-     *
+     * <p/>
      * This is desired when in testing and pushing notifications
      * with a development provision.
      *
-     * @return  this
+     * @return this
      */
     public ApnsServiceBuilder withSandboxDestination() {
         return withGatewayDestination(SANDBOX_GATEWAY_HOST, SANDBOX_GATEWAY_PORT)
-        .withFeedbackDestination(SANDBOX_FEEDBACK_HOST, SANDBOX_FEEDBACK_PORT);
+                .withFeedbackDestination(SANDBOX_FEEDBACK_HOST, SANDBOX_FEEDBACK_PORT);
     }
 
     /**
      * Specify to use the Apple Production servers as iPhone gateway
      * and feedback servers.
-     *
+     * <p/>
      * This is desired when sending notifications to devices with
      * a production provision (whether through App Store or Ad hoc
      * distribution).
      *
-     * @return  this
+     * @return this
      */
     public ApnsServiceBuilder withProductionDestination() {
         return withGatewayDestination(PRODUCTION_GATEWAY_HOST, PRODUCTION_GATEWAY_PORT)
-        .withFeedbackDestination(PRODUCTION_FEEDBACK_HOST, PRODUCTION_FEEDBACK_PORT);
+                .withFeedbackDestination(PRODUCTION_FEEDBACK_HOST, PRODUCTION_FEEDBACK_PORT);
     }
 
     /**
      * Specify the reconnection policy for the socket connection.
-     *
+     * <p/>
      * Note: This option has no effect when using non-blocking
      * connections.
      */
@@ -341,11 +345,11 @@ public class ApnsServiceBuilder {
         this.reconnectPolicy = rp;
         return this;
     }
-    
+
     /**
      * Specify if the notification cache should auto adjust.
      * Default is true
-     * 
+     *
      * @param autoAdjustCacheLength the notification cache should auto adjust.
      * @return this
      */
@@ -356,7 +360,7 @@ public class ApnsServiceBuilder {
 
     /**
      * Specify the reconnection policy for the socket connection.
-     *
+     * <p/>
      * Note: This option has no effect when using non-blocking
      * connections.
      */
@@ -368,17 +372,17 @@ public class ApnsServiceBuilder {
     /**
      * Specify the address of the SOCKS proxy the connection should
      * use.
-     *
+     * <p/>
      * <p>Read the <a href="http://java.sun.com/javase/6/docs/technotes/guides/net/proxies.html">
      * Java Networking and Proxies</a> guide to understand the
      * proxies complexity.
-     *
+     * <p/>
      * <p>Be aware that this method only handles SOCKS proxies, not
      * HTTPS proxies.  Use {@link #withProxy(Proxy)} instead.
      *
-     * @param host  the hostname of the SOCKS proxy
-     * @param port  the port of the SOCKS proxy server
-     * @return  this
+     * @param host the hostname of the SOCKS proxy
+     * @param port the port of the SOCKS proxy server
+     * @return this
      */
     public ApnsServiceBuilder withSocksProxy(String host, int port) {
         Proxy proxy = new Proxy(Proxy.Type.SOCKS,
@@ -389,15 +393,15 @@ public class ApnsServiceBuilder {
     /**
      * Specify the proxy and the authentication parameters to be used
      * to establish the connections to Apple Servers.
-     *
+     * <p/>
      * <p>Read the <a href="http://java.sun.com/javase/6/docs/technotes/guides/net/proxies.html">
      * Java Networking and Proxies</a> guide to understand the
      * proxies complexity.
      *
-     * @param proxy the proxy object to be used to create connections
+     * @param proxy         the proxy object to be used to create connections
      * @param proxyUsername a String object representing the username of the proxy server
      * @param proxyPassword a String object representing the password of the proxy server
-     * @return  this
+     * @return this
      */
     public ApnsServiceBuilder withAuthProxy(Proxy proxy, String proxyUsername, String proxyPassword) {
         this.proxy = proxy;
@@ -405,29 +409,29 @@ public class ApnsServiceBuilder {
         this.proxyPassword = proxyPassword;
         return this;
     }
-    
+
     /**
      * Specify the proxy to be used to establish the connections
      * to Apple Servers
-     *
+     * <p/>
      * <p>Read the <a href="http://java.sun.com/javase/6/docs/technotes/guides/net/proxies.html">
      * Java Networking and Proxies</a> guide to understand the
      * proxies complexity.
      *
      * @param proxy the proxy object to be used to create connections
-     * @return  this
+     * @return this
      */
     public ApnsServiceBuilder withProxy(Proxy proxy) {
         this.proxy = proxy;
         return this;
     }
-    
+
     /**
      * Specify the number of notifications to cache for error purposes.
      * Default is 100
-     * 
-     * @param cacheLength  Number of notifications to cache for error purposes
-     * @return  this
+     *
+     * @param cacheLength Number of notifications to cache for error purposes
+     * @return this
      */
     public ApnsServiceBuilder withCacheLength(int cacheLength) {
         this.cacheLength = cacheLength;
@@ -437,12 +441,12 @@ public class ApnsServiceBuilder {
     /**
      * Specify the socket to be used as underlying socket to connect
      * to the APN service.
-     *
+     * <p/>
      * This assumes that the socket connects to a SOCKS proxy.
      *
+     * @param proxySocket the underlying socket for connections
+     * @return this
      * @deprecated use {@link ApnsServiceBuilder#withProxy(Proxy)} instead
-     * @param proxySocket   the underlying socket for connections
-     * @return  this
      */
     @Deprecated
     public ApnsServiceBuilder withProxySocket(Socket proxySocket) {
@@ -452,10 +456,10 @@ public class ApnsServiceBuilder {
 
     /**
      * Constructs a pool of connections to the notification servers.
-     *
+     * <p/>
      * Apple servers recommend using a pooled connection up to
      * 15 concurrent persistent connections to the gateways.
-     *
+     * <p/>
      * Note: This option has no effect when using non-blocking
      * connections.
      */
@@ -465,13 +469,13 @@ public class ApnsServiceBuilder {
 
     /**
      * Constructs a pool of connections to the notification servers.
-     *
+     * <p/>
      * Apple servers recommend using a pooled connection up to
      * 15 concurrent persistent connections to the gateways.
-     *
+     * <p/>
      * Note: This option has no effect when using non-blocking
      * connections.
-     *
+     * <p/>
      * Note: The maxConnections here is used as a hint to how many connections
      * get created.
      */
@@ -485,72 +489,66 @@ public class ApnsServiceBuilder {
      * Constructs a new thread with a processing queue to process
      * notification requests.
      *
-     * @return  this
+     * @return this
      */
     public ApnsServiceBuilder asQueued() {
         return asQueued(Executors.defaultThreadFactory());
     }
-    
+
     /**
      * Constructs a new thread with a processing queue to process
      * notification requests.
      *
-     * @param threadFactory
-     *            thread factory to use for queue processing
-     * @return  this
+     * @param threadFactory thread factory to use for queue processing
+     * @return this
      */
     public ApnsServiceBuilder asQueued(ThreadFactory threadFactory) {
         this.isQueued = true;
         this.queueThreadFactory = threadFactory;
         return this;
     }
-    
+
     /**
      * Construct service which will process notification requests in batch.
      * After each request batch will wait <code>waitTimeInSec (set as 5sec)</code> for more request to come
      * before executing but not more than <code>maxWaitTimeInSec (set as 10sec)</code>
-     * 
+     * <p/>
      * Note: It is not recommended to use pooled connection
      */
     public ApnsServiceBuilder asBatched() {
         return asBatched(5, 10);
     }
-    
+
     /**
      * Construct service which will process notification requests in batch.
      * After each request batch will wait <code>waitTimeInSec</code> for more request to come
      * before executing but not more than <code>maxWaitTimeInSec</code>
-     * 
+     * <p/>
      * Note: It is not recommended to use pooled connection
-     * 
-     * @param waitTimeInSec
-     *            time to wait for more notification request before executing
-     *            batch
-     * @param maxWaitTimeInSec
-     *            maximum wait time for batch before executing
+     *
+     * @param waitTimeInSec    time to wait for more notification request before executing
+     *                         batch
+     * @param maxWaitTimeInSec maximum wait time for batch before executing
      */
     public ApnsServiceBuilder asBatched(int waitTimeInSec, int maxWaitTimeInSec) {
         return asBatched(waitTimeInSec, maxWaitTimeInSec, null);
     }
-    
+
     /**
      * Construct service which will process notification requests in batch.
      * After each request batch will wait <code>waitTimeInSec</code> for more request to come
      * before executing but not more than <code>maxWaitTimeInSec</code>
-     * 
+     * <p/>
      * Each batch creates new connection and close it after finished.
-     * In case reconnect policy is specified it will be applied by batch processing. 
+     * In case reconnect policy is specified it will be applied by batch processing.
      * E.g.: {@link ReconnectPolicy.Provided#EVERY_HALF_HOUR} will reconnect the connection in case batch is running for more than half an hour
-     * 
+     * <p/>
      * Note: It is not recommended to use pooled connection
-     * 
-     * @param waitTimeInSec
-     *            time to wait for more notification request before executing
-     *            batch
-     * @param maxWaitTimeInSec
-     *            maximum wait time for batch before executing
-     * @param threadFactory
-     *            thread factory to use for batch processing
+     *
+     * @param waitTimeInSec    time to wait for more notification request before executing
+     *                         batch
+     * @param maxWaitTimeInSec maximum wait time for batch before executing
+     * @param threadFactory    thread factory to use for batch processing
      */
     public ApnsServiceBuilder asBatched(int waitTimeInSec, int maxWaitTimeInSec, ThreadFactory threadFactory) {
         this.isBatched = true;
@@ -559,12 +557,12 @@ public class ApnsServiceBuilder {
         this.batchThreadFactory = threadFactory;
         return this;
     }
-    
-    
+
+
     /**
      * Sets the delegate of the service, that gets notified of the
      * status of message delivery.
-     *
+     * <p/>
      * Note: This option has no effect when using non-blocking
      * connections.
      */
@@ -577,11 +575,11 @@ public class ApnsServiceBuilder {
      * Disables the enhanced error detection, enabled by the
      * enhanced push notification interface.  Error detection is
      * enabled by default.
-     *
+     * <p/>
      * This setting is desired when the application shouldn't spawn
      * new threads.
      *
-     * @return  this
+     * @return this
      */
     public ApnsServiceBuilder withNoErrorDetection() {
         this.errorDetection = false;
@@ -590,12 +588,12 @@ public class ApnsServiceBuilder {
 
     /**
      * Provide a custom source for threads used for monitoring connections.
-     *
+     * <p/>
      * This setting is desired when the application must obtain threads from a
-     * controlled environment Google App Engine. 
-     * @param threadFactory
-     *            thread factory to use for error detection
-     * @return  this
+     * controlled environment Google App Engine.
+     *
+     * @param threadFactory thread factory to use for error detection
+     * @return this
      */
     public ApnsServiceBuilder withErrorDetectionThreadFactory(ThreadFactory threadFactory) {
         this.errorDetectionThreadFactory = threadFactory;
@@ -606,7 +604,7 @@ public class ApnsServiceBuilder {
      * Returns a fully initialized instance of {@link ApnsService},
      * according to the requested settings.
      *
-     * @return  a new instance of ApnsService
+     * @return a new instance of ApnsService
      */
     public ApnsService build() {
         checkInitialization();
@@ -616,7 +614,7 @@ public class ApnsServiceBuilder {
         ApnsFeedbackConnection feedback = new ApnsFeedbackConnection(sslFactory, feedbackHost, feedbackPort, proxy, readTimeout, connectTimeout, proxyUsername, proxyPassword);
 
         ApnsConnection conn = new ApnsConnectionImpl(sslFactory, gatewayHost,
-            gatewayPort, proxy, proxyUsername, proxyPassword, reconnectPolicy,
+                gatewayPort, proxy, proxyUsername, proxyPassword, reconnectPolicy,
                 delegate, errorDetection, errorDetectionThreadFactory, cacheLength,
                 autoAdjustCacheLength, readTimeout, connectTimeout);
         if (pooledMax != 1) {
@@ -628,7 +626,7 @@ public class ApnsServiceBuilder {
         if (isQueued) {
             service = new QueuedApnsService(service, queueThreadFactory);
         }
-        
+
         if (isBatched) {
             service = new BatchApnsService(conn, feedback, batchWaitTimeInSec, batchMaxWaitTimeInSec, batchThreadFactory);
         }
@@ -642,11 +640,11 @@ public class ApnsServiceBuilder {
         if (sslContext == null)
             throw new IllegalStateException(
                     "SSL Certificates and attribute are not initialized\n"
-                    + "Use .withCert() methods.");
+                            + "Use .withCert() methods.");
         if (gatewayHost == null || gatewayPort == -1)
             throw new IllegalStateException(
                     "The Destination APNS server is not stated\n"
-                    + "Use .withDestination(), withSandboxDestination(), "
-                    + "or withProductionDestination().");
+                            + "Use .withDestination(), withSandboxDestination(), "
+                            + "or withProductionDestination().");
     }
 }

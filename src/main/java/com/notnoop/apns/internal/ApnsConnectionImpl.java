@@ -33,7 +33,6 @@ package com.notnoop.apns.internal;
 import java.io.EOFException;
 import java.io.IOException;
 import java.io.InputStream;
-import java.io.OutputStream;
 import java.net.InetSocketAddress;
 import java.net.Proxy;
 import java.net.Socket;
@@ -142,20 +141,22 @@ public class ApnsConnectionImpl implements ApnsConnection {
             @Override
             public void run() {
                 logger.debug("Started monitoring thread");
-                InputStream in = null;
+
                 try {
+                    InputStream in;
                     try {
-                        logger.warn("CC MMMMMMMMMMM-1 ready getInputStream monitorSocket socket = {}", socket);
+                        logger.debug("CC MMMMMMMMMMM-1 ready getInputStream monitorSocket socket = {}", socket);
                         in = socket.getInputStream();
                         logger.warn("CC MMMMMMMMMMM-1-1 getInputStream end monitorSocket socket = {}", socket);
                     } catch (IOException ioe) {
-                        logger.warn("CC MMMMMMMMMMM-2 IOException = {}, monitorSocket socket = {}", ioe, socket);
+                        logger.debug("CC MMMMMMMMMMM-2 IOException = {}, monitorSocket socket = {}", ioe, socket);
                         in = null;
                     }
+
                     byte[] bytes = new byte[EXPECTED_SIZE];
                     while (in != null && readPacket(in, bytes)) {
 
-                        logger.warn("CC MMMMMMMMMMM-3, readpacket monitorSocket socket = {}", socket);
+                        logger.debug("CC MMMMMMMMMMM-3, readpacket monitorSocket socket = {}", socket);
 
                         logger.debug("Error-response packet {}", Utilities.encodeHex(bytes));
                         // Quickly close socket, so we won't ever try to send push notifications
@@ -242,40 +243,27 @@ public class ApnsConnectionImpl implements ApnsConnection {
                 final int len = bytes.length;
                 int n = 0;
                 while (n < len) {
-                    logger.warn("CC RRRRRRR-1 len = {}", len);
+                    logger.debug("CC RRRRRRR-1 len = {}", len);
                     try {
                         int count = in.read(bytes, n, len - n);
-                        logger.warn("CC RRRRRRR-2 n = {}, count = {}", n, count);
+                        logger.debug("CC RRRRRRR-2 n = {}, count = {}", n, count);
                         if (count < 0) {
                             throw new EOFException("EOF after reading " + n + " bytes of new packet.");
                         }
                         n += count;
                     } catch (IOException ioe) {
                         if (n == 0) {
-                            logger.warn("CC RRRRRRRRRRRR IOException=", ioe);
-                            logger.warn("CC RRRRRRRRRRRR received apple response = {}, readPacket = false", Utilities.encodeHex(bytes));
+                            logger.debug("CC RRRRRRRRRRRR IOException=", ioe);
+                            logger.debug("CC RRRRRRRRRRRR received apple response = {}, readPacket = false", Utilities.encodeHex(bytes));
 
                             return false;
                         }
                         throw new IOException("Error after reading " + n + " bytes of packet", ioe);
                     }
                 }
-                logger.warn("CC RRRRRRRRRRRR received apple response = {}, readPacket = true", Utilities.encodeHex(bytes));
+                logger.debug("CC RRRRRRRRRRRR received apple response = {}, readPacket = true", Utilities.encodeHex(bytes));
                 return true;
             }
-
-//            public String bytes2HexString(byte[] b) {
-//                String ret = "";
-//                for (int i = 0; i < b.length; i++) {
-//                    String hex = Integer.toHexString(b[i] & 0xFF);
-//                    if (hex.length() == 1) {
-//                        hex = '0' + hex;
-//                    }
-//                    ret += hex.toUpperCase();
-//
-//                }
-//                return ret;
-//            }
         });
         t.start();
     }
@@ -334,15 +322,14 @@ public class ApnsConnectionImpl implements ApnsConnection {
     private static final int RETRIES = 3;
 
     public synchronized void sendMessage(ApnsNotification m) throws NetworkIOException {
-        logger.warn("CC enter impl sendMessage, ApnsNotification = {}", m);
+        logger.debug("CC enter impl sendMessage, ApnsNotification = {}", m);
         sendMessage(m, false);
         drainBuffer();
     }
 
     private synchronized void sendMessage(final ApnsNotification m, final boolean fromBuffer) throws NetworkIOException {
         logger.debug("sendMessage {} fromBuffer: {}", m, fromBuffer);
-
-        logger.warn("CC SSSSSSSSSSS enter sendMessage {} fromBuffer: {} socket is {}", m, fromBuffer, (socket == null || socket.isClosed()) ? null : socket);
+        logger.debug("CC SSSSSSSSSSS enter sendMessage {} fromBuffer: {} socket is {}", m, fromBuffer, (socket == null || socket.isClosed()) ? null : socket);
 
         if (delegate instanceof StartSendingApnsDelegate) {
             ((StartSendingApnsDelegate) delegate).startSending(m, fromBuffer);
@@ -354,40 +341,13 @@ public class ApnsConnectionImpl implements ApnsConnection {
             try {
                 attempts++;
 
-                logger.warn("CC SSSSSSSSSSS-0 ready");
+                logger.debug("CC SSSSSSSSSSS-0 ready");
                 final Socket socket = getOrCreateSocket(fromBuffer);
-
-                logger.warn("CC SSSSSSSSSSS-1 ready socket = {}, isConnected = {}, isInputShutdown = {}, isOutputShutdown = {}", socket, socket.isConnected(), socket.isInputShutdown(), socket.isOutputShutdown());
-
-//                Future<Void> future = executors.submit(new Callable<Void>() {
-//                    public Void call() throws Exception {
-                logger.warn("CC SSSSSSSSSSS-2 ready write nitifacation = {}", m);
+                logger.debug("CC SSSSSSSSSSS-1 ready socket = {}, isConnected = {}, isInputShutdown = {}, isOutputShutdown = {}", socket, socket.isConnected(), socket.isInputShutdown(), socket.isOutputShutdown());
+                logger.debug("CC SSSSSSSSSSS-2 ready write nitifacation = {}", m);
                 socket.getOutputStream().write(m.marshall());
-                logger.warn("CC SSSSSSSSSSS-3 ready flush nitifacation = {}", m);
-                socket.getOutputStream().flush();
-//                        return null;
-//                    }
-//                });
-
-
-//                try {
-//                    logger.warn("CC SSSSSSSSSSS-wait-write ready wait for write nitifacation = {}", m);
-//                    future.get(30, TimeUnit.SECONDS);
-//
-//                } catch (InterruptedException e) {
-//                    logger.warn("CC SSSSSSSSSSS-wait-write meet InterruptedException nitifacation = {}", m);
-//                    Thread.currentThread().interrupt();
-//                    throw new IOException(e.getCause());
-//                } catch (ExecutionException e) {
-//                    logger.warn("CC SSSSSSSSSSS-wait-write meet ExecutionException nitifacation = {}", m);
-//                    throw new IOException(e.getCause());
-//                } catch (TimeoutException e) {
-//                    logger.warn("CC SSSSSSSSSSS-wait-write meet TimeoutException nitifacation = {}", m);
-//                    throw new IOException(e.getCause());
-//                }
-
-
-                logger.warn("CC SSSSSSSSSSS-4 ready cache nitifacation = {}", m);
+                logger.debug("CC SSSSSSSSSSS-3 ready flush nitifacation = {}", m);
+                logger.debug("CC SSSSSSSSSSS-4 ready cache nitifacation = {}", m);
                 cacheNotification(m);
 
                 delegate.messageSent(m, fromBuffer);
@@ -396,7 +356,7 @@ public class ApnsConnectionImpl implements ApnsConnection {
                 attempts = 0;
                 break;
             } catch (IOException e) {
-                logger.warn("CC SSSSSSSSSSS-5 catch exception nitifacation = {}, IOException = {}, attempts = {}, close socket = {}", m, e, attempts, socket);
+                logger.debug("CC SSSSSSSSSSS-5 catch exception nitifacation = {}, IOException = {}, attempts = {}, close socket = {}", m, e, attempts, socket);
                 Utilities.close(socket);
                 if (attempts >= RETRIES) {
                     logger.error("Couldn't send message after " + RETRIES + " retries." + m, e);
@@ -410,18 +370,10 @@ public class ApnsConnectionImpl implements ApnsConnection {
                 // which uses the delay.
 
                 if (attempts != 1) {
-                    logger.warn("CC SSSSSSSSSSS-6 retry send nitifacation = {}, attempts = {}", m, attempts);
+                    logger.debug("CC SSSSSSSSSSS-6 retry send nitifacation = {}, attempts = {}", m, attempts);
                     logger.info("Failed to send message " + m + "... trying again after delay", e);
                     Utilities.sleep(DELAY_IN_MS);
                 }
-            } finally {
-//                if(os != null) {
-//                    try {
-//                        os.close();
-//                    } catch (IOException e) {
-//                        e.printStackTrace();
-//                    }
-//                }
             }
         }
     }
