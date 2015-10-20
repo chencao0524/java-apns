@@ -78,6 +78,8 @@ public class ApnsConnectionImpl implements ApnsConnection {
     private final AtomicInteger threadId = new AtomicInteger(0);
     private final ExecutorService executors = Executors.newSingleThreadExecutor();
 
+    private int sendMessageTimeout = 30;
+
     public ApnsConnectionImpl(SocketFactory factory, String host, int port) {
         this(factory, host, port, new ReconnectPolicies.Never(), ApnsDelegate.EMPTY);
     }
@@ -128,6 +130,12 @@ public class ApnsConnectionImpl implements ApnsConnection {
     }
 
     public synchronized void close() {
+        executors.shutdown();
+        try {
+            executors.awaitTermination(10, TimeUnit.SECONDS);
+        } catch (InterruptedException e) {
+            logger.warn("pool termination interrupted", e);
+        }
         Utilities.close(socket);
     }
 
@@ -336,6 +344,7 @@ public class ApnsConnectionImpl implements ApnsConnection {
         }
 
         int attempts = 0;
+
         while (true) {
 
             try {
@@ -345,8 +354,32 @@ public class ApnsConnectionImpl implements ApnsConnection {
                 final Socket socket = getOrCreateSocket(fromBuffer);
                 logger.debug("CC SSSSSSSSSSS-1 ready socket = {}, isConnected = {}, isInputShutdown = {}, isOutputShutdown = {}", socket, socket.isConnected(), socket.isInputShutdown(), socket.isOutputShutdown());
                 logger.debug("CC SSSSSSSSSSS-2 ready write nitifacation = {}", m);
-                socket.getOutputStream().write(m.marshall());
-                logger.debug("CC SSSSSSSSSSS-3 ready flush nitifacation = {}", m);
+//                final int finalA = attempts;
+                Future<Void> future = executors.submit(new Callable<Void>() {
+                    public Void call() throws Exception {
+                        logger.debug("CC SSSSSSSSSSS-3-2 enter thread write and flush nitifacation = {}", m);
+//                        if (finalA == 1) {
+//                            Utilities.sleep(15000);
+//                        }
+                        socket.getOutputStream().write(m.marshall());
+                        socket.getOutputStream().flush();
+                        logger.debug("CC SSSSSSSSSSS-3-3 enter thread done nitifacation = {}", m);
+                        return null;
+                    }
+                });
+                try {
+                    logger.debug("CC SSSSSSSSSSS-3-1 future.get() start====== nitifacation = {}", m);
+                    future.get(sendMessageTimeout, TimeUnit.SECONDS);
+                    logger.debug("CC SSSSSSSSSSS-3-4 future.get() end====== nitifacation = {}", m);
+                } catch (InterruptedException ie) {
+                    Thread.currentThread().interrupt();
+                } catch (ExecutionException ee) {
+                    throw new IOException(ee.getCause());
+                } catch (TimeoutException te) {
+                    logger.debug("CC SSSSSSSSSSS-3-5 timeout for sendMessage HAHAHAHAHAHAHAHAHAHA nitifacation = {}", m);
+                    throw new IOException(te.getCause());
+                }
+
                 logger.debug("CC SSSSSSSSSSS-4 ready cache nitifacation = {}", m);
                 cacheNotification(m);
 
