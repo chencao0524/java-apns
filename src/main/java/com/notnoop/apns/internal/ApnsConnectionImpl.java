@@ -76,7 +76,7 @@ public class ApnsConnectionImpl implements ApnsConnection {
     private final ConcurrentLinkedQueue<ApnsNotification> cachedNotifications, notificationsBuffer;
     private Socket socket;
     private final AtomicInteger threadId = new AtomicInteger(0);
-    private final ExecutorService executors = Executors.newSingleThreadExecutor();
+    private ExecutorService executors = Executors.newSingleThreadExecutor();
 
     private int sendMessageTimeout = 30;
 
@@ -155,7 +155,7 @@ public class ApnsConnectionImpl implements ApnsConnection {
                     try {
                         logger.debug("CC MMMMMMMMMMM-1 ready getInputStream monitorSocket socket = {}", socket);
                         in = socket.getInputStream();
-                        logger.warn("CC MMMMMMMMMMM-1-1 getInputStream end monitorSocket socket = {}", socket);
+                        logger.debug("CC MMMMMMMMMMM-1-1 getInputStream end monitorSocket socket = {}", socket);
                     } catch (IOException ioe) {
                         logger.debug("CC MMMMMMMMMMM-2 IOException = {}, monitorSocket socket = {}", ioe, socket);
                         in = null;
@@ -356,13 +356,13 @@ public class ApnsConnectionImpl implements ApnsConnection {
                 final Socket socket = getOrCreateSocket(fromBuffer);
                 logger.debug("CC SSSSSSSSSSS-1 ready socket = {}, isConnected = {}, isInputShutdown = {}, isOutputShutdown = {}", socket, socket.isConnected(), socket.isInputShutdown(), socket.isOutputShutdown());
                 logger.debug("CC SSSSSSSSSSS-2 ready write nitifacation = {}", m);
-//                final int finalA = attempts;
+                if (executors == null || executors.isShutdown() || executors.isTerminated()) {
+                    logger.debug("CC SSSSSSSSSSS-2-1 executors is shutdown, XXXXXXXXXXXXXXXXXX setup a new one. nitifacation = {}", m);
+                    executors = Executors.newSingleThreadExecutor();
+                }
                 Future<Void> future = executors.submit(new Callable<Void>() {
                     public Void call() throws Exception {
                         logger.debug("CC SSSSSSSSSSS-3-2 enter thread write and flush nitifacation = {}", m);
-//                        if (finalA == 1) {
-//                            Utilities.sleep(15000);
-//                        }
                         socket.getOutputStream().write(m.marshall());
                         socket.getOutputStream().flush();
                         logger.debug("CC SSSSSSSSSSS-3-3 enter thread done nitifacation = {}", m);
