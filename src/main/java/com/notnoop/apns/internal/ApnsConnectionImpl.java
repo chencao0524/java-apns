@@ -142,6 +142,9 @@ public class ApnsConnectionImpl implements ApnsConnection {
     private void monitorSocket(final Socket socket) {
         logger.debug("Launching Monitoring Thread for socket {}", socket);
 
+//        避免在finally块中重复关闭已经正常开启的Socket和executors
+        final Socket monitoredSocket = socket;
+
         Thread t = threadFactory.newThread(new Runnable() {
             final static int EXPECTED_SIZE = 6;
 
@@ -153,23 +156,23 @@ public class ApnsConnectionImpl implements ApnsConnection {
                 try {
                     InputStream in;
                     try {
-                        logger.debug("CC MMMMMMMMMMM-1 ready getInputStream monitorSocket socket = {}", socket);
-                        in = socket.getInputStream();
-                        logger.debug("CC MMMMMMMMMMM-1-1 getInputStream end monitorSocket socket = {}", socket);
+                        logger.debug("CC MMMMMMMMMMM-1 ready getInputStream monitorSocket socket = {}", monitoredSocket);
+                        in = monitoredSocket.getInputStream();
+                        logger.debug("CC MMMMMMMMMMM-1-1 getInputStream end monitorSocket socket = {}", monitoredSocket);
                     } catch (IOException ioe) {
-                        logger.debug("CC MMMMMMMMMMM-2 IOException = {}, monitorSocket socket = {}", ioe, socket);
+                        logger.debug("CC MMMMMMMMMMM-2 IOException = {}, monitorSocket socket = {}", ioe, monitoredSocket);
                         in = null;
                     }
 
                     byte[] bytes = new byte[EXPECTED_SIZE];
                     while (in != null && readPacket(in, bytes)) {
 
-                        logger.debug("CC MMMMMMMMMMM-3, readpacket monitorSocket socket = {}", socket);
+                        logger.debug("CC MMMMMMMMMMM-3, readpacket monitorSocket socket = {}", monitoredSocket);
 
                         logger.debug("Error-response packet {}", Utilities.encodeHex(bytes));
                         // Quickly close socket, so we won't ever try to send push notifications
                         // using the defective socket.
-                        Utilities.close(socket);
+                        Utilities.close(monitoredSocket);
 
                         int command = bytes[0] & 0xFF;
                         if (command != 8) {
@@ -234,7 +237,8 @@ public class ApnsConnectionImpl implements ApnsConnection {
                     logger.info("Exception while waiting for error code", e);
                     delegate.connectionClosed(DeliveryError.UNKNOWN, -1);
                 } finally {
-                    close();
+//                    close();
+                    Utilities.close(monitoredSocket);
                     drainBuffer();
                 }
             }
