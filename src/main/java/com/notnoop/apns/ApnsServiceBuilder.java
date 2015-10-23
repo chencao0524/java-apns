@@ -88,7 +88,7 @@ public class ApnsServiceBuilder {
     private ExecutorService executor = null;
 
     private ReconnectPolicy reconnectPolicy = ReconnectPolicy.Provided.EVERY_HALF_HOUR.newObject();
-    //    private ReconnectPolicy reconnectPolicy = ReconnectPolicy.Provided.FIVE_MINUTE.newObject();
+    //        private ReconnectPolicy reconnectPolicy = ReconnectPolicy.Provided.FIVE_MINUTE.newObject();
     private boolean isQueued = false;
     private ThreadFactory queueThreadFactory = null;
 
